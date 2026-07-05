@@ -1,0 +1,404 @@
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+:root {
+    --bg-primary: #0a0a1a;
+    --bg-secondary: #141428;
+    --accent: #00e5ff;
+    --accent-glow: rgba(0, 229, 255, 0.3);
+    --accent-2: #ff4081;
+    --accent-2-glow: rgba(255, 64, 129, 0.3);
+    --text-primary: #ffffff;
+    --text-secondary: #8888aa;
+    --success: #69f0ae;
+    --warning: #ffd740;
+    --error: #ff5252;
+    --surface: rgba(255, 255, 255, 0.05);
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Screens */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.screen.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Title Screen */
+.title-container {
+    text-align: center;
+    padding: 2rem;
+}
+
+.game-title {
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.game-title span {
+    font-size: 3rem;
+    letter-spacing: 0.3em;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 3rem;
+    font-style: italic;
+}
+
+/* Buttons */
+.btn-primary, .btn-secondary {
+    border: none;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent), #0088aa);
+    color: var(--bg-primary);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary:active, .btn-secondary:active {
+    transform: scale(0.95);
+}
+
+/* Stage Intro */
+.stage-info {
+    text-align: center;
+    padding: 2rem;
+}
+
+.stage-number {
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    margin-bottom: 0.5rem;
+}
+
+.stage-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.stage-desc {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.stage-tempo {
+    color: var(--accent);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Game Screen */
+.game-header {
+    position: absolute;
+    top: env(safe-area-inset-top, 20px);
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    z-index: 10;
+}
+
+.stage-indicator {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.2em;
+}
+
+.phase-indicator {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    background: var(--surface);
+    transition: all 0.3s ease;
+}
+
+.phase-indicator.listen {
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.phase-indicator.play {
+    color: var(--accent-2);
+    border: 1px solid var(--accent-2);
+    box-shadow: 0 0 10px var(--accent-2-glow);
+}
+
+/* Rhythm Visualizer */
+.rhythm-visualizer {
+    position: absolute;
+    top: 15%;
+    left: 0;
+    right: 0;
+    height: 30%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#canvas-visualizer {
+    width: 100%;
+    height: 100%;
+}
+
+/* Tap Area */
+.tap-area {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.05s ease;
+}
+
+.tap-area.active {
+    background: rgba(0, 229, 255, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 0 40px var(--accent-glow), inset 0 0 30px var(--accent-glow);
+    transform: translateX(-50%) scale(0.95);
+}
+
+.tap-area.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.tap-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    opacity: 0;
+    animation: none;
+}
+
+.tap-ring.pulse {
+    animation: ring-pulse 0.6s ease-out;
+}
+
+@keyframes ring-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.tap-text {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+/* Timing Bar */
+.timing-bar {
+    position: absolute;
+    bottom: 45%;
+    left: 10%;
+    right: 10%;
+    height: 4px;
+    background: var(--surface);
+    border-radius: 2px;
+    overflow: visible;
+}
+
+.timing-progress {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 0%;
+    transition: none;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.beat-markers {
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 20px;
+}
+
+.beat-marker {
+    position: absolute;
+    width: 2px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    top: 4px;
+    transform: translateX(-1px);
+}
+
+.beat-marker.strong {
+    height: 16px;
+    top: 2px;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* Result Screen */
+.result-container {
+    text-align: center;
+    padding: 2rem;
+}
+
+.result-grade {
+    font-size: 6rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+}
+
+.result-grade.s { color: var(--accent); text-shadow: 0 0 30px var(--accent-glow); }
+.result-grade.a { color: var(--success); }
+.result-grade.b { color: var(--warning); }
+.result-grade.c { color: var(--error); }
+
+.result-score {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.result-details {
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 1.5rem;
+    margin-bottom: 0.5rem;
+    background: var(--surface);
+    border-radius: 10px;
+}
+
+.detail-label {
+    color: var(--text-secondary);
+}
+
+.detail-value {
+    font-weight: 700;
+}
+
+.result-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Animations */
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fade-in-up 0.5s ease forwards;
+}
+
+/* Long press indicator */
+.tap-area .hold-indicator {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    clip-path: none;
+    opacity: 0;
+}
+
+.tap-area.holding .hold-indicator {
+    opacity: 1;
+    animation: hold-fill 2s linear forwards;
+}
+
+@keyframes hold-fill {
+    from {
+        clip-path: polygon(50% 50%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
+    }
+    to {
+        clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%);
+    }
+}

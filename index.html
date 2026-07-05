@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Rhythm Echo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Title Screen -->
+        <div id="screen-title" class="screen active">
+            <div class="title-container">
+                <h1 class="game-title">RHYTHM<br><span>ECHO</span></h1>
+                <p class="subtitle">Feel the rhythm. Echo it back.</p>
+                <button id="btn-start" class="btn-primary">TAP TO START</button>
+            </div>
+        </div>
+
+        <!-- Stage Intro Screen -->
+        <div id="screen-stage-intro" class="screen">
+            <div class="stage-info">
+                <div class="stage-number">STAGE <span id="stage-num">1</span></div>
+                <div class="stage-name" id="stage-name">First Steps</div>
+                <div class="stage-desc" id="stage-desc">4/4 - Simple quarter notes</div>
+                <div class="stage-tempo" id="stage-tempo">BPM 100</div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="screen-game" class="screen">
+            <div class="game-header">
+                <div class="stage-indicator">STAGE <span id="game-stage-num">1</span></div>
+                <div class="phase-indicator" id="phase-indicator">LISTEN</div>
+            </div>
+
+            <div class="rhythm-visualizer">
+                <canvas id="canvas-visualizer"></canvas>
+            </div>
+
+            <div class="tap-area" id="tap-area">
+                <div class="tap-ring" id="tap-ring"></div>
+                <div class="tap-text" id="tap-text">LISTEN...</div>
+            </div>
+
+            <div class="timing-bar">
+                <div class="timing-progress" id="timing-progress"></div>
+                <div class="beat-markers" id="beat-markers"></div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="screen-result" class="screen">
+            <div class="result-container">
+                <div class="result-grade" id="result-grade">A</div>
+                <div class="result-score" id="result-score">92%</div>
+                <div class="result-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Timing</span>
+                        <span class="detail-value" id="result-timing">95%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value" id="result-duration">89%</span>
+                    </div>
+                </div>
+                <div class="result-buttons">
+                    <button id="btn-retry" class="btn-secondary">RETRY</button>
+                    <button id="btn-next" class="btn-primary">NEXT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="audio-engine.js"></script>
+    <script src="rhythm-patterns.js"></script>
+    <script src="game-logic.js"></script>
+    <script src="visuals.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
