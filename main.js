@@ -102,13 +102,32 @@ gameLogic.onPhaseChange = (phase) => {
         elements.tapText.textContent = 'LISTEN...';
         elements.phaseIndicator.textContent = 'LISTEN';
         elements.phaseIndicator.className = 'phase-indicator listen';
-    } else if (phase === 'PLAY') {
-        elements.tapArea.classList.remove('disabled');
-        elements.tapText.textContent = 'TAP!';
+    } else if (phase === 'PLAY_COUNTIN') {
+        elements.tapArea.classList.add('disabled');
+        elements.tapText.textContent = 'GET READY!';
         elements.phaseIndicator.textContent = 'YOUR TURN';
         elements.phaseIndicator.className = 'phase-indicator play';
         elements.timingProgress.style.width = '0%';
+    } else if (phase === 'PLAY') {
+        elements.tapArea.classList.remove('disabled');
+        elements.tapText.textContent = 'GO!';
+        elements.phaseIndicator.textContent = 'GO!';
+        elements.phaseIndicator.className = 'phase-indicator play';
+        // GO! を一瞬大きく表示してからTAPに変える
+        elements.tapArea.classList.add('active');
+        setTimeout(() => {
+            elements.tapArea.classList.remove('active');
+            elements.tapText.textContent = 'TAP!';
+            elements.phaseIndicator.textContent = 'YOUR TURN';
+        }, 300);
     }
+};
+
+/**
+ * PLAYカウントイン表示（4カウント、YOUR TURN前の明確な合図）
+ */
+gameLogic.onPlayCountdown = (step, total) => {
+    elements.tapText.textContent = `${total - step + 1}`;
 };
 
 /**
@@ -145,6 +164,7 @@ gameLogic.onDemoNote = (note, index) => {
  */
 gameLogic.onResult = (result) => {
     visuals.stop();
+    // BGMは止めない（結果画面でも流れ続ける）
     
     setTimeout(() => {
         elements.resultGrade.textContent = result.grade;
@@ -173,7 +193,7 @@ gameLogic.onResult = (result) => {
  */
 function handleTapStart(e) {
     e.preventDefault();
-    if (gameLogic.phase !== 'PLAY' || isTapping) return;
+    if ((gameLogic.phase !== 'PLAY') || isTapping) return;
 
     isTapping = true;
     
@@ -247,11 +267,13 @@ function setupEventListeners() {
     // リトライ
     elements.btnRetry.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        audioEngine.stopBGM();
         showStageIntro();
         setTimeout(startGame, 2000);
     });
     elements.btnRetry.addEventListener('click', (e) => {
         if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
+        audioEngine.stopBGM();
         showStageIntro();
         setTimeout(startGame, 2000);
     });
@@ -259,6 +281,7 @@ function setupEventListeners() {
     // 次のステージ
     elements.btnNext.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        audioEngine.stopBGM();
         if (gameLogic.nextStage()) {
             showStageIntro();
             setTimeout(startGame, 2000);
@@ -266,6 +289,7 @@ function setupEventListeners() {
     });
     elements.btnNext.addEventListener('click', (e) => {
         if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
+        audioEngine.stopBGM();
         if (gameLogic.nextStage()) {
             showStageIntro();
             setTimeout(startGame, 2000);
