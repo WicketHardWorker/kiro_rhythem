@@ -242,6 +242,9 @@ function setupEventListeners() {
     elements.btnStart.addEventListener('touchstart', async (e) => {
         e.preventDefault();
         await audioEngine.init();
+        // iOS: ユーザージェスチャー内で確実にresume
+        await audioEngine.ensureResumed();
+        audioEngine.warmUp();
         showStageIntro();
         setTimeout(startGame, 2000);
     });
@@ -250,6 +253,8 @@ function setupEventListeners() {
     elements.btnStart.addEventListener('click', async (e) => {
         if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
         await audioEngine.init();
+        await audioEngine.ensureResumed();
+        audioEngine.warmUp();
         showStageIntro();
         setTimeout(startGame, 2000);
     });

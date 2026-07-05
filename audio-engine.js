@@ -39,9 +39,7 @@ class AudioEngine {
         });
 
         // Resume if suspended (iOS対策)
-        if (this.ctx.state === 'suspended') {
-            await this.ctx.resume();
-        }
+        await this.ensureResumed();
 
         // マスターゲイン
         this.masterGain = this.ctx.createGain();
@@ -50,7 +48,7 @@ class AudioEngine {
 
         // BGM用チェーン
         this.bgmGain = this.ctx.createGain();
-        this.bgmGain.gain.value = 0.25;
+        this.bgmGain.gain.value = 0.3;
         this.bgmGain.connect(this.masterGain);
 
         // SFX用チェーン（タップ音・お手本音）
@@ -66,7 +64,35 @@ class AudioEngine {
         this.compressor.connect(this.masterGain);
 
         this.isReady = true;
+        
+        // 無音を再生してオーディオパイプラインを起動（iOS/Android対策）
+        this.warmUp();
+        
         console.log(`AudioEngine ready. Base latency: ${(this.ctx.baseLatency * 1000).toFixed(1)}ms, Output latency: ${((this.ctx.outputLatency || 0) * 1000).toFixed(1)}ms`);
+    }
+
+    /**
+     * AudioContext が suspended なら resume する（毎回呼べる）
+     */
+    async ensureResumed() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+            await this.ctx.resume();
+        }
+    }
+
+    /**
+     * 無音を一瞬鳴らしてオーディオパイプラインをウォームアップ
+     * iOS Safari で最初のジェスチャー後に音が出ない問題の対策
+     */
+    warmUp() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        gain.gain.value = 0.001; // ほぼ無音
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
     }
 
     /**
@@ -82,6 +108,7 @@ class AudioEngine {
      */
     playTapSound(isHold = false) {
         if (!this.isReady) return { stop: () => {} };
+        this.ensureResumed();
 
         const sound = isHold ? this.sounds.tapHold : this.sounds.tap;
         const now = this.ctx.currentTime;
@@ -161,6 +188,7 @@ class AudioEngine {
      */
     scheduleDemoNote(atTime, duration = 0.1) {
         if (!this.isReady) return;
+        this.ensureResumed();
 
         const isHold = duration > 0.2;
         const sound = isHold ? this.sounds.demoHold : this.sounds.demo;
@@ -195,6 +223,7 @@ class AudioEngine {
      */
     scheduleClick(atTime, strong = false) {
         if (!this.isReady) return;
+        this.ensureResumed();
 
         const sound = strong ? this.sounds.metronome : this.sounds.metronomeLow;
         const osc = this.ctx.createOscillator();
@@ -219,6 +248,9 @@ class AudioEngine {
     startBGM(bpm, timeSignature = [4, 4]) {
         this.stopBGM();
         if (!this.isReady) return;
+        
+        // iOS対策: 毎回resumeを確認
+        this.ensureResumed();
 
         const beatDuration = 60 / bpm;
         const barDuration = beatDuration * timeSignature[0];
