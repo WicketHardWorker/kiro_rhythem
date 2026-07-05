@@ -3,13 +3,14 @@
  * 
  * フェーズ:
  * 1. LISTEN - お手本パターンを聴く（2回再生）
- * 2. PLAY - プレイヤーがパターンを再現
- * 3. JUDGE - 判定・結果表示
+ * 2. PLAY_COUNTIN - YOUR TURN の4カウント
+ * 3. PLAY - プレイヤーがパターンを再現
+ * 4. JUDGE - 判定・結果表示
  */
 class GameLogic {
     constructor() {
         this.currentStage = 0;
-        this.phase = 'IDLE'; // IDLE, COUNTDOWN, LISTEN, PLAY, JUDGE
+        this.phase = 'IDLE'; // IDLE, COUNTDOWN, LISTEN, PLAY_COUNTIN, PLAY, JUDGE
         this.playerInputs = []; // { startTime, endTime } in seconds relative to pattern start
         this.patternStartTime = 0; // AudioContext time when play phase started
         this.scheduledNotes = [];
@@ -22,6 +23,7 @@ class GameLogic {
         this.onDemoNote = null;
         this.onResult = null;
         this.onCountdown = null;
+        this.onPlayCountdown = null;
         this.onProgress = null;
 
         // タイミング判定設定
@@ -58,6 +60,9 @@ class GameLogic {
         }
         this.playerInputs = [];
         this.phase = 'IDLE';
+        
+        // BGMを即座に開始（ステージ中ずっと鳴り続ける）
+        audioEngine.startBGM(this.stage.bpm, this.stage.bgmTimeSignature);
         
         // ステージイントロ後にカウントダウン開始
         setTimeout(() => this.startCountdown(), 2000);
@@ -109,8 +114,7 @@ class GameLogic {
         const patternDur = getPatternDurationSec(stage);
         const startTime = audioEngine.now + 0.1;
 
-        // BGM開始
-        audioEngine.startBGM(stage.bpm, stage.bgmTimeSignature);
+        // BGMはstartStage()で既に開始済み（止めない）
 
         // メトロノーム（小節全体）
         const totalBeats = stage.timeSignature[0];
@@ -166,38 +170,59 @@ class GameLogic {
     }
 
     /**
-     * プレイフェーズ
+     * プレイフェーズ - 4カウントのカウントインで明確に開始を伝える
      */
     startPlayPhase() {
-        this.phase = 'PLAY';
+        this.phase = 'PLAY_COUNTIN';
         this.playerInputs = [];
-        if (this.onPhaseChange) this.onPhaseChange('PLAY');
+        if (this.onPhaseChange) this.onPhaseChange('PLAY_COUNTIN');
 
         const stage = this.stage;
         const beatDur = this.beatDuration;
         const patternDur = getPatternDurationSec(stage);
-        const startTime = audioEngine.now + beatDur; // 1拍のカウントイン
+        
+        // 4カウントのカウントイン（YOUR TURN を明確に伝える）
+        const countInBeats = 4;
+        const countInStart = audioEngine.now + 0.1;
 
-        this.patternStartTime = startTime;
-
-        // 1拍カウントイン
-        audioEngine.scheduleClick(audioEngine.now + 0.05, true);
-
-        // メトロノーム（プレイ中）
-        const totalBeats = stage.timeSignature[0];
-        for (let i = 0; i < totalBeats; i++) {
-            const t = startTime + i * beatDur;
-            audioEngine.scheduleClick(t, i === 0);
+        for (let i = 0; i < countInBeats; i++) {
+            const t = countInStart + i * beatDur;
+            audioEngine.scheduleClick(t, true); // 全部強いクリックで目立たせる
         }
 
-        // プログレス
-        setTimeout(() => {
-            this.startProgressTracking(startTime, patternDur);
+        // カウントイン表示
+        this.countdownStep = 0;
+        const countInterval = setInterval(() => {
+            this.countdownStep++;
+            if (this.onPlayCountdown) this.onPlayCountdown(this.countdownStep, countInBeats);
+            if (this.countdownStep >= countInBeats) {
+                clearInterval(countInterval);
+            }
         }, beatDur * 1000);
 
-        // プレイ時間終了後に判定（余白込み）
-        const playTime = (beatDur + patternDur + beatDur * 0.5) * 1000;
-        setTimeout(() => this.judgePerformance(), playTime);
+        // カウントイン終了後に本番開始
+        const countInDuration = countInBeats * beatDur;
+        const startTime = countInStart + countInDuration;
+        this.patternStartTime = startTime;
+
+        setTimeout(() => {
+            this.phase = 'PLAY';
+            if (this.onPhaseChange) this.onPhaseChange('PLAY');
+
+            // メトロノーム（プレイ中）
+            const totalBeats = stage.timeSignature[0];
+            for (let i = 0; i < totalBeats; i++) {
+                const t = startTime + i * beatDur;
+                audioEngine.scheduleClick(t, i === 0);
+            }
+
+            // プログレス
+            this.startProgressTracking(startTime, patternDur);
+
+            // プレイ時間終了後に判定（余白込み）
+            const playTime = (patternDur + beatDur * 0.5) * 1000;
+            setTimeout(() => this.judgePerformance(), playTime);
+        }, countInDuration * 1000);
     }
 
     /**
@@ -233,7 +258,7 @@ class GameLogic {
      */
     judgePerformance() {
         this.phase = 'JUDGE';
-        audioEngine.stopBGM();
+        // BGMは止めない（結果画面でも鳴り続ける）
 
         const stage = this.stage;
         const beatDur = this.beatDuration;
